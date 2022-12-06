@@ -1,1 +1,1 @@
-Task 0. <o>
+Task 0
