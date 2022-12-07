@@ -1,1 +1,3 @@
- Task 6. Local variable
+ Task 7. Global variable
+
+
