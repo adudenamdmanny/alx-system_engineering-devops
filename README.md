@@ -1,1 +1,1 @@
- Task 5. Local variables
+ Task 6. Local variable
