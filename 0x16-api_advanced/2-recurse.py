@@ -1,40 +1,31 @@
 #!/usr/bin/python3
+"""Contains recurse function"""
 import requests
 
-def count_words(subreddit, word_list, after=None, word_counts=None):
-    if word_counts is None:
-        word_counts = {}  # Initialize the dictionary to store word counts
 
-    headers = {'User-Agent': 'Your User Agent'}  # Replace with your User Agent
-    url = f'https://www.reddit.com/r/{subreddit}/hot.json?after={after}'
-    response = requests.get(url, headers=headers)
+def recurse(subreddit, hot_list=[], after="", count=0):
+    """Returns a list of titles of all hot posts on a given subreddit."""
+    url = "https://www.reddit.com/r/{}/hot/.json".format(subreddit)
+    headers = {
+        "User-Agent": "0x16-api_advanced:project:\
+v1.0.0 (by /u/firdaus_cartoon_jr)"
+    }
+    params = {
+        "after": after,
+        "count": count,
+        "limit": 100
+    }
+    response = requests.get(url, headers=headers, params=params,
+                            allow_redirects=False)
+    if response.status_code == 404:
+        return None
 
-    if response.status_code == 200:
-        data = response.json()
-        posts = data['data']['children']
+    results = response.json().get("data")
+    after = results.get("after")
+    count += results.get("dist")
+    for c in results.get("children"):
+        hot_list.append(c.get("data").get("title"))
 
-        for post in posts:
-            title = post['data']['title'].lower()  # Convert title to lowercase
-            for word in word_list:
-                if word in title and title.count(word) > 0:
-                    if word in word_counts:
-                        word_counts[word] += title.count(word)
-                    else:
-                        word_counts[word] = title.count(word)
-
-        after = data['data']['after']
-        if after:
-            count_words(subreddit, word_list, after, word_counts)
-        else:
-            sorted_word_counts = sorted(word_counts.items(), key=lambda x: (-x[1], x[0]))
-            for word, count in sorted_word_counts:
-                print(f"{word}: {count}")
-
-    else:
-        print("Invalid subreddit or no matching posts.")
-
-# Example usage
-subreddit = "programming"
-word_list = ["python", "javascript", "java"]
-count_words(subreddit, word_list)
-
+    if after is not None:
+        return recurse(subreddit, hot_list, after, count)
+    return hot_list
